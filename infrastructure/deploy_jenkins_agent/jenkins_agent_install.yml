@@ -1,0 +1,176 @@
+---
+- name: Install Jenkins agent on hosts
+  hosts: ':jenkins_agent'
+  become: true
+  tasks:
+
+    - name: Update apt cache
+      ansible.builtin.apt:
+        update_cache: true
+
+    - name: Install prerequisites
+      ansible.builtin.apt:
+        name:
+          - apt-transport-https
+          - ca-certificates
+          - curl
+          - gnupg
+          - lsb-release
+          - dpkg
+          - python3-pip
+          - python3-docker
+          - python3-setuptools
+          - software-properties-common
+          - python3-requests
+          - git
+        state: present
+
+    - name: Create directory for Docker GPG key
+      ansible.builtin.file:
+        path: /etc/apt/keyrings
+        state: directory
+        mode: '0755'
+
+    - name: Download Docker GPG key
+      ansible.builtin.get_url:
+        url: https://download.docker.com/linux/ubuntu/gpg
+        dest: /etc/apt/keyrings/docker.asc
+        mode: '0644'
+
+    - name: Add Docker repository to sources list
+      ansible.builtin.copy:
+        content: "deb [arch=amd64 signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu jammy stable"
+        dest: /etc/apt/sources.list.d/docker.list
+        mode: '0644'
+
+    - name: Update apt cache again
+      ansible.builtin.apt:
+        update_cache: true
+
+    - name: Install Docker packages
+      ansible.builtin.apt:
+        name:
+          - docker-ce
+          - docker-ce-cli
+          - containerd.io
+          - docker-buildx-plugin
+          - docker-compose-plugin
+        state: present
+
+    - name: Start Docker service
+      ansible.builtin.systemd:
+        state: started
+        enabled: true
+        name: docker
+
+    - name: Install OpenJDK 17
+      ansible.builtin.apt:
+        name: openjdk-17-jdk-headless
+        state: present
+        install_recommends: false
+
+    - name: Add Google Cloud SDK GPG key
+      ansible.builtin.apt_key:
+        url: https://packages.cloud.google.com/apt/doc/apt-key.gpg
+        state: present
+        keyring: /usr/share/keyrings/cloud.google.gpg
+
+    - name: Add Google Cloud SDK repository
+      ansible.builtin.apt_repository:
+        repo: "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main"
+        state: present
+
+    - name: Update apt cache for Google Cloud SDK
+      ansible.builtin.apt:
+        update_cache: true
+
+    - name: Install Google Cloud CLI
+      ansible.builtin.apt:
+        name: google-cloud-cli
+        state: present
+
+    - name: Install snapd package
+      ansible.builtin.package:
+        name: snapd
+        state: present
+
+    - name: Install Google Cloud SDK GKE gcloud auth plugin
+      ansible.builtin.apt:
+        name: google-cloud-sdk-gke-gcloud-auth-plugin
+        state: present
+
+    - name: Install kubectl via Snap
+      community.general.snap:
+        name: kubectl
+        classic: true
+
+    - name: Install Helm via Snap
+      community.general.snap:
+        name: helm
+        classic: true
+
+    - name: Download Node.js LTS setup script
+      ansible.builtin.get_url:
+        url: https://deb.nodesource.com/setup_lts.x
+        dest: /tmp/setup_lts.x
+        mode: '0755'
+
+    - name: Run Node.js LTS setup script
+      ansible.builtin.command:
+        cmd: bash /tmp/setup_lts.x
+      changed_when: false
+
+    - name: Update apt cache for Node.js
+      ansible.builtin.apt:
+        update_cache: true
+
+    - name: Install Node.js and npm
+      ansible.builtin.apt:
+        name: nodejs
+        state: present
+
+    - name: Install ESLint globally using npm
+      community.general.npm:
+        name: eslint
+        global: true
+
+    - name: Install Stylelint globally using npm
+      community.general.npm:
+        name: stylelint
+        global: true
+
+    - name: Install HTMLHint globally using npm
+      community.general.npm:
+        name: htmlhint
+        global: true
+
+    - name: Create Jenkins work directory
+      ansible.builtin.file:
+        path: /var/jenkins
+        state: directory
+        mode: '0755'
+
+    - name: Create Jenkins service directory
+      ansible.builtin.file:
+        path: /usr/local/jenkins-service
+        state: directory
+        mode: '0755'
+
+    - name: Copy start-agent.sh to remote host
+      ansible.builtin.copy:
+        src: ./start-agent.sh
+        dest: /usr/local/jenkins-service/start-agent.sh
+        mode: '0755'
+
+    - name: Copy jenkins-agent.service to remote host
+      ansible.builtin.copy:
+        src: ./jenkins-agent.service
+        dest: /etc/systemd/system/jenkins-agent.service
+        mode: '0755'
+
+    - name: Enable and start Jenkins agent service
+      ansible.builtin.systemd:
+        name: jenkins-agent.service
+        enabled: true
+        state: started
+        daemon_reload: true

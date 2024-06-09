@@ -1,0 +1,26 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: diplom-mysite-deployment
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: diplom-mysite
+  template:
+    metadata:
+      labels:
+        app: diplom-mysite
+    spec:
+      containers:
+        - name: diplom-mysite
+          image: hitmouz/diplom-mysite:latest
+          resources:
+            limits:
+              cpu: 1    
+              memory: 1Gi
+            requests:
+              cpu: 300m
+              memory: 300Mi
+

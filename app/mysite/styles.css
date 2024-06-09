@@ -1,0 +1,96 @@
+body, html {
+    height: 100%;
+    margin: 0;
+    font-family: Arial, sans-serif;
+}
+
+.background-image {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: -1;
+}
+
+#home-image {
+    display: block;
+}
+
+#check-image {
+    display: none;
+}
+
+.tab {
+    background-color: transparent;
+    overflow: hidden;
+    width: 100%;
+    text-align: center;
+    padding: 10px 0;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 2;
+}
+
+.tab button {
+    background-color: rgba(0, 0, 0, 0.7);
+    border: none;
+    outline: none;
+    cursor: pointer;
+    padding: 14px 16px;
+    transition: 0.3s;
+    font-size: 17px;
+    color: white;
+    margin: 0 2px;
+}
+
+.tab button:hover {
+    background-color: rgba(0, 0, 0, 0.9);
+    color: white;
+}
+
+.tab button.active {
+    background-color: rgba(0, 0, 0, 0.9);
+    color: white;
+}
+
+.tabcontent {
+    display: none;
+    position: absolute;
+    top: 50px;
+    left: 0;
+    width: 100%;
+    height: calc(100% - 50px);
+    color: white;
+    padding: 20px;
+    box-sizing: border-box;
+    z-index: 1;
+}
+
+.content {
+    background: transparent; /* Прозрачный фон */
+    padding: 20px;
+    height: 100%;
+}
+
+#Home .header, #home-text {
+    text-align: left;
+    margin-left: 20px;
+}
+
+#Check .header, #Check p {
+    text-align: center;
+}
+
+.version {
+    position: fixed;
+    bottom: 10px;
+    left: 10px;
+    background-color: rgba(255, 255, 255, 0.8);
+    padding: 5px 10px;
+    border-radius: 5px;
+    font-size: 14px;
+    color: #000;
+}

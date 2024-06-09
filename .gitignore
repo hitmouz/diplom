@@ -1,0 +1,4 @@
+infrastructure/deploy_k8s_ingress_cert/vps2033-kuber50401033.json
+infrastructure/deploy_k8s_ingress_cert/.terraform/
+infrastructure/deploy_k8s_ingress_cert/terraform.tfstate.backup
+infrastructure/deploy_k8s_ingress_cert/terraform.tfstate

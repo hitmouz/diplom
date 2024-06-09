@@ -1,0 +1,192 @@
+---
+- name: Install Jenkins on hosts
+  hosts: ':jenkins'
+  become: true
+  tasks:
+
+    - name: Update apt cache
+      ansible.builtin.apt:
+        update_cache: true
+
+    - name: Install prerequisites
+      ansible.builtin.apt:
+        name:
+          - apt-transport-https
+          - ca-certificates
+          - curl
+          - gnupg
+          - lsb-release
+          - python3-pip
+          - python3-docker
+          - python3-setuptools
+          - software-properties-common
+          - python3-requests
+        state: present
+
+    - name: Create directory for Docker GPG key
+      ansible.builtin.file:
+        path: /etc/apt/keyrings
+        state: directory
+        mode: '0755'
+
+    - name: Download Docker GPG key
+      ansible.builtin.get_url:
+        url: https://download.docker.com/linux/ubuntu/gpg
+        dest: /etc/apt/keyrings/docker.asc
+        mode: '0644'
+
+    - name: Add Docker repository to sources list
+      ansible.builtin.copy:
+        content: "deb [arch=amd64 signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu jammy stable"
+        dest: /etc/apt/sources.list.d/docker.list
+        mode: '0644'
+
+    - name: Update apt cache again
+      ansible.builtin.apt:
+        update_cache: true
+
+    - name: Install Docker packages
+      ansible.builtin.apt:
+        name:
+          - docker-ce
+          - docker-ce-cli
+          - containerd.io
+          - docker-buildx-plugin
+          - docker-compose-plugin
+        state: present
+
+    - name: Start Docker service
+      ansible.builtin.systemd:
+        state: started
+        enabled: true
+        name: docker
+
+    - name: Install Nginx
+      ansible.builtin.apt:
+        name: nginx
+        state: present
+
+    - name: Start Nginx service
+      ansible.builtin.systemd:
+        state: started
+        enabled: true
+        name: nginx
+
+    - name: Change and add the directory for deploy_jenkins
+      ansible.builtin.file:
+        path: /root/deploy_jenkins
+        state: directory
+        mode: '0755'
+
+    - name: Copy docker-compose.yml to remote host
+      ansible.builtin.copy:
+        src: ./docker-compose.yml
+        dest: /root/deploy_jenkins/docker-compose.yml
+        mode: '0644'
+
+    - name: Copy nginx.conf.j2 to remote host
+      ansible.builtin.copy:
+        src: ./nginx.conf.j2
+        dest: /root/deploy_jenkins/nginx.conf.j2
+        mode: '0644'
+
+    - name: Copy jenkins_home.tar.gz to remote host
+      ansible.builtin.copy:
+        src: ./jenkins_home.tar.gz
+        dest: /root/deploy_jenkins/jenkins_home.tar.gz
+        mode: '0644'
+
+    - name: Create jenkins_home directory
+      ansible.builtin.file:
+        path: /var/lib/docker/volumes/jenkins_home/_data/
+        state: directory
+        mode: '0755'
+
+    - name: Create directory for jenkins_home Docker volume
+      community.docker.docker_volume:
+        name: jenkins_home
+        state: present
+
+    - name: Extract jenkins_home.tar.gz
+      ansible.builtin.unarchive:
+        src: /root/deploy_jenkins/jenkins_home.tar.gz
+        dest: /var/lib/docker/volumes/jenkins_home/_data/
+        remote_src: true
+
+    - name: Run Docker Compose
+      community.docker.docker_compose_v2:
+        project_src: /root/deploy_jenkins/
+        state: present
+
+    - name: Install Certbot
+      ansible.builtin.apt:
+        name:
+          - software-properties-common
+          - certbot
+          - python3-certbot-nginx
+        state: present
+
+    - name: Update Nginx configuration for IPv4
+      ansible.builtin.replace:
+        path: /etc/nginx/sites-available/default
+        regexp: 'listen\s+80\s+default_server;'
+        replace: 'listen 8085 default_server;'
+      notify:
+        - Reload Nginx
+
+    - name: Update Nginx configuration for IPv6
+      ansible.builtin.replace:
+        path: /etc/nginx/sites-available/default
+        regexp: 'listen\s+\[::\]:80\s+default_server;'
+        replace: 'listen [::]:8085 default_server;'
+      notify:
+        - Reload Nginx
+
+    - name: Check if Nginx config for Jenkins exists
+      ansible.builtin.stat:
+        path: /etc/nginx/sites-available/jenkins1-hitmouz.com.conf
+      register: nginx_conf
+
+    - name: Create Nginx config for Jenkins
+      ansible.builtin.template:
+        src: "{{ playbook_dir }}/nginx.conf.j2"
+        dest: /etc/nginx/sites-available/jenkins1-hitmouz.com.conf
+        mode: '0644'
+      when: not nginx_conf.stat.exists
+      notify:
+        - Reload Nginx
+
+    - name: Check if Jenkins site is enabled
+      ansible.builtin.stat:
+        path: /etc/nginx/sites-enabled/jenkins1-hitmouz.com.conf
+      register: nginx_site_enabled
+
+    - name: Enable Jenkins site
+      ansible.builtin.file:
+        src: /etc/nginx/sites-available/jenkins1-hitmouz.com.conf
+        dest: /etc/nginx/sites-enabled/jenkins1-hitmouz.com.conf
+        state: link
+      when: not nginx_site_enabled.stat.exists
+      notify:
+        - Reload Nginx
+
+    - name: Check if certificate already exists
+      ansible.builtin.stat:
+        path: /etc/letsencrypt/live/jenkins1.hitmouz.com/fullchain.pem
+      register: cert
+
+    - name: Get Let's Encrypt SSL certificate
+      ansible.builtin.command:
+        cmd: certbot --nginx --non-interactive --agree-tos --email licimer@mail.ru -d jenkins1.hitmouz.com
+      when: not cert.stat.exists
+      changed_when: "'Congratulations!' in certbot_output.stdout"
+      register: certbot_output
+      notify:
+        - Reload Nginx
+
+  handlers:
+    - name: Reload Nginx
+      ansible.builtin.systemd:
+        state: restarted
+        daemon_reload: true
+        name: nginx

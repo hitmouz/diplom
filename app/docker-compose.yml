@@ -1,0 +1,7 @@
+services:
+  diplom-mysite:
+    image: ${IMAGE_NAME}:${IMAGE_TAG}
+    container_name: diplom-mysite
+    ports:
+      - '8080:80'
+    restart: "no"
