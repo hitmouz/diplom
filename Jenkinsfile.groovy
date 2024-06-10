@@ -205,7 +205,7 @@ pipeline {
                             sh 'helm uninstall diplom-mysite-stage'
                         }
 
-                        sh 'helm install diplom-mysite-stage k8s-helm-diplom/ --set hostname=stage.hitmouz.com --set tlsSecretName=stage-hitmouz-com-tls'
+                        sh 'helm install diplom-mysite-stage k8s-helm-diplom/ --set hostname=stage.hitmouz.com --set tlsSecretName=stage-hitmouz-com-tls --set serviceSelector.app=diplom-mysite1'
                     }
                 }
             }
