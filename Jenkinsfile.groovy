@@ -205,7 +205,7 @@ pipeline {
                             sh 'helm uninstall diplom-mysite-stage'
                         }
 
-                        sh 'helm install diplom-mysite-stage k8s-helm-diplom/ --values values-dev.yaml'
+                        sh 'helm install diplom-mysite-stage k8s-helm-diplom/ --values k8s-helm-diplom/values-dev.yaml'
                     }
                 }
             }
