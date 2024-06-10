@@ -1,0 +1,48 @@
+# Base configuration for kube-prometheus-stack
+
+# Set the namespace where the resources will be deployed
+namespaceOverride: monitoring
+
+# Grafana configuration
+grafana:
+  enabled: true
+  ingress:
+    enabled: true
+    annotations:
+      cert-manager.io/cluster-issuer: letsencrypt-prod1
+    ingressClassName: nginx
+    hosts:
+      - grafana.hitmouz.com
+    path: /
+    tls:
+      - secretName: grafana-hitmouz-com-tls
+        hosts:
+          - grafana.hitmouz.com
+  adminUser: admin
+  adminPassword: admin_password
+
+# Prometheus configuration
+prometheus:
+  prometheusSpec:
+    serviceMonitorSelectorNilUsesHelmValues: false
+
+# Alertmanager configuration
+alertmanager:
+  alertmanagerSpec:
+    serviceMonitorSelectorNilUsesHelmValues: false
+
+# Configuration for node-exporter
+nodeExporter:
+  enabled: true
+
+# Configuration for kube-state-metrics
+kubeStateMetrics:
+  enabled: true
+
+# Configuration for Prometheus Operator
+prometheusOperator:
+  enabled: true
+
+# Configuration for Prometheus Adapter
+prometheusAdapter:
+  enabled: true
