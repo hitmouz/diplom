@@ -1,0 +1,29 @@
+# Values for my-site-diplom.
+
+# Deployment
+replicaCount: 2
+image:
+  repository: hitmouz/diplom-mysite
+  tag: 0.0.0
+resources:
+  limits:
+    cpu: 1
+    memory: 1Gi
+  requests:
+    cpu: 300m
+    memory: 300Mi
+
+# Service
+spec:
+  type: ClusterIP
+serviceSelector:
+  app: diplom-mysite-dev
+servicePort: 80
+servicetargetPort: 80
+serviceProtocol: TCP
+
+# Ingress
+certManagerIssuer: "letsencrypt-prod1"
+ingressClassName: nginx
+hostname: stage.hitmouz.com
+tlsSecretName: stage-hitmouz-com-tls
