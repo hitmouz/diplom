@@ -16,6 +16,8 @@ resources:
 # Service
 spec:
   type: ClusterIP
+serviceSelector:
+  app: diplom-mysite
 servicePort: 80
 servicetargetPort: 80
 serviceProtocol: TCP
