@@ -198,14 +198,14 @@ pipeline {
                         """
                         
                         // Проверяем, установлен ли уже Helm релиз
-                        def helmStatus = sh(script: 'helm status diplom-mysite-stage', returnStatus: true)
+                        //def helmStatus = sh(script: 'helm status diplom-mysite-stage', returnStatus: true)
             
-                        if (helmStatus == 0) {
+                        //if (helmStatus == 0) {
                             // Если релиз уже установлен, удаляем его
-                            sh 'helm uninstall diplom-mysite-stage'
-                        }
+                          //  sh 'helm uninstall diplom-mysite-stage'
+                        //}
 
-                        sh 'helm install diplom-mysite-stage k8s-helm-diplom/ --values k8s-helm-diplom/values-stage.yaml'
+                        sh 'helm upgrade --install diplom-mysite-stage k8s-helm-diplom/ --values k8s-helm-diplom/values-stage.yaml'
                     }
                 }
             }
@@ -241,7 +241,7 @@ pipeline {
                             sh 'helm uninstall diplom-mysite-prod'
                         }
 
-                        sh 'helm install diplom-mysite-prod k8s-helm-diplom/ --values k8s-helm-diplom/values-prod.yaml'
+                        sh 'helm upgrade --install diplom-mysite-prod k8s-helm-diplom/ --values k8s-helm-diplom/values-prod.yaml'
                     }
                 }
             }
