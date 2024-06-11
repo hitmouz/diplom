@@ -194,7 +194,7 @@ pipeline {
                          
                         // Обновляем значение тега в values-dev.yaml
                         sh """
-                            sed -i 's/tag: .*/tag: ${version}/' ./k8s-helm-diplom/values-dev.yaml
+                            sed -i 's/tag: .*/tag: ${version}/' ./k8s-helm-diplom/values-stage.yaml
                         """
                         
                         // Проверяем, установлен ли уже Helm релиз
@@ -205,7 +205,7 @@ pipeline {
                             sh 'helm uninstall diplom-mysite-stage'
                         }
 
-                        sh 'helm install diplom-mysite-stage k8s-helm-diplom/ --values k8s-helm-diplom/values-dev.yaml'
+                        sh 'helm install diplom-mysite-stage k8s-helm-diplom/ --values k8s-helm-diplom/values-stage.yaml'
                     }
                 }
             }
@@ -230,7 +230,7 @@ pipeline {
                          
                         // Обновляем значение тега в values.yaml
                         sh """
-                            sed -i 's/tag: .*/tag: ${version}/' ./k8s-helm-diplom/values.yaml
+                            sed -i 's/tag: .*/tag: ${version}/' ./k8s-helm-diplom/values-prod.yaml
                         """
                         
                         // Проверяем, установлен ли уже Helm релиз
@@ -241,7 +241,7 @@ pipeline {
                             sh 'helm uninstall diplom-mysite-prod'
                         }
 
-                        sh 'helm install diplom-mysite-prod k8s-helm-diplom/'
+                        sh 'helm install diplom-mysite-prod k8s-helm-diplom/ --values k8s-helm-diplom/values-prod.yaml'
                     }
                 }
             }
