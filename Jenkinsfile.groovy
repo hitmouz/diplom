@@ -252,7 +252,7 @@ pipeline {
         success {
             node('agent') {
                 script {
-                    def TEXT_SUCCESS_BUILD = "Build succeeded: ${env.JOB_NAME} (Build number - ${env.BUILD_NUMBER})"
+                    def TEXT_SUCCESS_BUILD = "Build and deploy succeeded: ${env.JOB_NAME} (Build number - ${env.BUILD_NUMBER})"
                     echo 'Build succeeded! Deploying...'
                     sendTelegramNotification(TEXT_SUCCESS_BUILD)
                 }
@@ -262,7 +262,7 @@ pipeline {
         failure {
             node('agent') {
                 script {
-                    def TEXT_FAILURE_BUILD = "Build failed: ${env.JOB_NAME} (Build number - ${env.BUILD_NUMBER})"
+                    def TEXT_FAILURE_BUILD = "Build and deploy succeeded: ${env.JOB_NAME} (Build number - ${env.BUILD_NUMBER})"
                     echo 'Build failed!'
                     sendTelegramNotification(TEXT_FAILURE_BUILD)
                 }
