@@ -68,7 +68,7 @@ pipeline {
             }
             steps {
                 script {
-                    // Чтение версии из файла
+                    // Read version from file Version
                     env.IMAGE_TAG = readFile('VERSION').trim()
                     echo "Using version: ${env.IMAGE_TAG}"
                 }
@@ -84,7 +84,7 @@ pipeline {
             }
             steps {
                 script {
-                    // Собрать Docker образ из Dockerfile, который находится в папке "app"
+                    // Building a Docker image from a Dockerfile in the "app" directory
                     docker.build("${IMAGE_NAME}:${IMAGE_TAG}", "-f app/Dockerfile .")
                 }
             }
@@ -98,7 +98,7 @@ pipeline {
                 label 'agent'
             }
             steps {
-                // Запуск контейнера с использованием docker-compose
+                // Running a container using docker-compose
                 sh 'docker compose -f ./app/docker-compose.yml up -d'
             }
         }
@@ -167,11 +167,11 @@ pipeline {
                 label 'agent'
             }
             steps {
-                // Остановка и удаление контейнера с использованием docker-compose
+                // Stopping and removing the container using docker-compose
                 sh 'docker compose -f ./app/docker-compose.yml down'
-                // Удаление всех образов Docker
+                // Removing all Docker images
                 sh 'docker rmi --force $(docker images -q)'
-                // Удаление директории после сборки и тестов
+                // Removing the directory after build and tests
                 sh 'rm -rf ${WORKSPACE}/*'
             }
         }
@@ -189,21 +189,13 @@ pipeline {
                         sh 'gcloud auth activate-service-account --key-file=$GOOGLE_APPLICATION_CREDENTIALS'
                         sh 'gcloud container clusters get-credentials diplom-gke-cluster --region europe-west3-a --project vps2033'
                         
-                        // Читаем содержимое файла VERSION 
+                        // Read the contents of the VERSION file
                         def version = readFile('VERSION').trim()
                          
-                        // Обновляем значение тега в values-dev.yaml
+                        // Update the tag value in the values-dev.yaml file
                         sh """
                             sed -i 's/tag: .*/tag: ${version}/' ./k8s-helm-diplom/values-stage.yaml
                         """
-                        
-                        // Проверяем, установлен ли уже Helm релиз
-                        //def helmStatus = sh(script: 'helm status diplom-mysite-stage', returnStatus: true)
-            
-                        //if (helmStatus == 0) {
-                            // Если релиз уже установлен, удаляем его
-                          //  sh 'helm uninstall diplom-mysite-stage'
-                        //}
 
                         sh 'helm upgrade --install diplom-mysite-stage k8s-helm-diplom/ --values k8s-helm-diplom/values-stage.yaml'
                     }
@@ -225,21 +217,13 @@ pipeline {
                         sh 'gcloud auth activate-service-account --key-file=$GOOGLE_APPLICATION_CREDENTIALS'
                         sh 'gcloud container clusters get-credentials diplom-gke-cluster --region europe-west3-a --project vps2033'
                         
-                        // Читаем содержимое файла VERSION 
+                        // Read the contents of the VERSION file
                         def version = readFile('VERSION').trim()
                          
-                        // Обновляем значение тега в values.yaml
+                        // Update the tag value in the values-dev.yaml file
                         sh """
                             sed -i 's/tag: .*/tag: ${version}/' ./k8s-helm-diplom/values-prod.yaml
                         """
-                        
-                        // Проверяем, установлен ли уже Helm релиз
-                        def helmStatus = sh(script: 'helm status diplom-mysite-prod', returnStatus: true)
-            
-                        if (helmStatus == 0) {
-                            // Если релиз уже установлен, удаляем его
-                            sh 'helm uninstall diplom-mysite-prod'
-                        }
 
                         sh 'helm upgrade --install diplom-mysite-prod k8s-helm-diplom/ --values k8s-helm-diplom/values-prod.yaml'
                     }
@@ -252,7 +236,7 @@ pipeline {
         success {
             node('agent') {
                 script {
-                    def TEXT_SUCCESS_BUILD = "Build and deploy succeeded: ${env.JOB_NAME} (Build number - ${env.BUILD_NUMBER})"
+                    def TEXT_SUCCESS_BUILD = "Build and deploy succeeded\nBuild: ${env.JOB_NAME} (Build number - ${env.BUILD_NUMBER})"
                     echo 'Build succeeded! Deploying...'
                     sendTelegramNotification(TEXT_SUCCESS_BUILD)
                 }
@@ -262,7 +246,7 @@ pipeline {
         failure {
             node('agent') {
                 script {
-                    def TEXT_FAILURE_BUILD = "Build and deploy succeeded: ${env.JOB_NAME} (Build number - ${env.BUILD_NUMBER})"
+                    def TEXT_FAILURE_BUILD = "Build and deploy failed\nBuild: ${env.JOB_NAME} (Build number - ${env.BUILD_NUMBER})"
                     echo 'Build failed!'
                     sendTelegramNotification(TEXT_FAILURE_BUILD)
                 }
