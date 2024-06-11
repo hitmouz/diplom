@@ -7,11 +7,11 @@ image:
   tag: 0.0.0
 resources:
   limits:
-    cpu: 1
-    memory: 1Gi
+    cpu: 200m
+    memory: 256Mi
   requests:
-    cpu: 300m
-    memory: 300Mi
+    cpu: 500m
+    memory: 512Mi
 
 # Service
 spec:
