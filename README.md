@@ -238,3 +238,9 @@
 
 ![Screenshot_83](https://github.com/hitmouz/diplom/assets/95587607/3f80b804-3f6a-46c8-992c-7b7c1fab16d5)
 
+Так же настроен мониторинг в Zabbix по HTTP
+
+Пример страницы мониторинга доступности сайта:
+
+![Screenshot_86](https://github.com/hitmouz/diplom/assets/95587607/2a1b5d4c-77e0-4113-8435-ecdb9008f655)
+
