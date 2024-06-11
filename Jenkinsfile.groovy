@@ -192,9 +192,9 @@ pipeline {
                         // Читаем содержимое файла VERSION 
                         def version = readFile('VERSION').trim()
                          
-                        // Обновляем значение тега в values.yaml
+                        // Обновляем значение тега в values-dev.yaml
                         sh """
-                            sed -i 's/tag: .*/tag: ${version}/' ./k8s-helm-diplom/values.yaml
+                            sed -i 's/tag: .*/tag: ${version}/' ./k8s-helm-diplom/values-dev.yaml
                         """
                         
                         // Проверяем, установлен ли уже Helm релиз
