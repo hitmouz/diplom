@@ -18,6 +18,11 @@ pipeline {
                 script {
                     env.BRANCH = "${env.GIT_BRANCH.replaceFirst('origin/', '')}"
                     echo "Branch: ${env.BRANCH}"
+
+                    if (env.BRANCH == 'dev') {
+                        env.COMMIT_ID = sh(returnStdout: true, script: 'git rev-parse HEAD').trim()
+                        echo "Commit ID: ${env.COMMIT_ID}"
+                    }
                 }
             }
         }
@@ -59,9 +64,27 @@ pipeline {
             }
         }
 
-        stage('Read version from file Version') {
+        stage('Read commit_id for stage') {
             when {
-                expression { env.BRANCH == 'main' || env.BRANCH == 'dev' }
+                expression { env.BRANCH == 'dev' }
+            }
+            agent {
+                label 'agent'
+            }
+            steps {
+                script {
+                    if (env.BRANCH == 'dev') {
+                        env.COMMIT_ID = sh(returnStdout: true, script: 'git rev-parse HEAD').trim()
+                        echo "Commit ID: ${env.COMMIT_ID}"
+                        env.IMAGE_TAG = env.COMMIT_ID
+                    }
+                }
+            }
+        }
+
+        stage('Read version from file Version for prod') {
+            when {
+                expression { env.BRANCH == 'main' }
             }
             agent {
                 label 'agent'
@@ -74,7 +97,7 @@ pipeline {
                 }
             }
         }
-        
+ 
         stage('Build') {
             when {
                 expression { env.BRANCH == 'main' || env.BRANCH == 'dev' }
@@ -85,7 +108,7 @@ pipeline {
             steps {
                 script {
                     // Building a Docker image from a Dockerfile in the "app" directory
-                    docker.build("${IMAGE_NAME}:${IMAGE_TAG}", "-f app/Dockerfile .")
+                    docker.build("${IMAGE_NAME}:${env.IMAGE_TAG}", "-f app/Dockerfile .")
                 }
             }
         }
@@ -194,7 +217,7 @@ pipeline {
                          
                         // Update the tag value in the values-dev.yaml file
                         sh """
-                            sed -i 's/tag: .*/tag: ${version}/' ./k8s-helm-diplom/values-stage.yaml
+                            sed -i 's/tag: .*/tag: ${env.IMAGE_TAG}/' ./k8s-helm-diplom/values-stage.yaml
                         """
 
                         sh 'helm upgrade --install diplom-mysite-stage k8s-helm-diplom/ --values k8s-helm-diplom/values-stage.yaml'
