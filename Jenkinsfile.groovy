@@ -20,7 +20,7 @@ pipeline {
                     echo "Branch: ${env.BRANCH}"
 
                     if (env.BRANCH == 'dev') {
-                        env.COMMIT_ID = sh(returnStdout: true, script: 'git rev-parse HEAD').trim()
+                        env.COMMIT_ID = sh(returnStdout: true, script: 'git rev-parse --short HEAD').trim()
                         echo "Commit ID: ${env.COMMIT_ID}"
                     }
                 }
@@ -64,7 +64,7 @@ pipeline {
             }
         }
 
-        stage('Read commit_id for stage') {
+        stage('Read commit_id for docker image tag - stage') {
             when {
                 expression { env.BRANCH == 'dev' }
             }
@@ -82,7 +82,7 @@ pipeline {
             }
         }
 
-        stage('Read version from file Version for prod') {
+        stage('Read file Version for docker image tag - prod') {
             when {
                 expression { env.BRANCH == 'main' }
             }
