@@ -18,11 +18,6 @@ pipeline {
                 script {
                     env.BRANCH = "${env.GIT_BRANCH.replaceFirst('origin/', '')}"
                     echo "Branch: ${env.BRANCH}"
-
-                    if (env.BRANCH == 'dev') {
-                        env.COMMIT_ID = sh(returnStdout: true, script: 'git rev-parse --short HEAD').trim()
-                        echo "Commit ID: ${env.COMMIT_ID}"
-                    }
                 }
             }
         }
@@ -74,7 +69,7 @@ pipeline {
             steps {
                 script {
                     if (env.BRANCH == 'dev') {
-                        env.COMMIT_ID = sh(returnStdout: true, script: 'git rev-parse HEAD').trim()
+                        env.COMMIT_ID = sh(returnStdout: true, script: 'git rev-parse --short HEAD').trim()
                         echo "Commit ID: ${env.COMMIT_ID}"
                         env.IMAGE_TAG = env.COMMIT_ID
                     }
