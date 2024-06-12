@@ -1,23 +1,23 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: diplom-mysite-ingress
+  name: kibana-ingress
   annotations:
-    cert-manager.io/issuer: "letsencrypt-prod"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod1"
 spec:
   ingressClassName: nginx
   tls:
-  - hosts:
-    - web.hitmouz.com
-    secretName: web-hitmouz-com-tls
+    - hosts:
+        - kibana.hitmouz.com
+      secretName: kibana-hitmouz-com-tls
   rules:
-  - host: web.hitmouz.com
-    http:
-      paths:
-      - path: /
-        pathType: Prefix
-        backend:
-          service:
-            name: diplom-mysite-service
-            port:
-              number: 80
+    - host: kibana.hitmouz.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: quickstart-kb-http
+                port:
+                  number: 5601
