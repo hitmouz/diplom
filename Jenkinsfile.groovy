@@ -103,7 +103,7 @@ pipeline {
             steps {
                 script {
                     // Building a Docker image from a Dockerfile in the "app" directory
-                    image = docker.build("${IMAGE_NAME}:${env.IMAGE_TAG}", "-f app/Dockerfile .")
+                    docker.build("${IMAGE_NAME}:${env.IMAGE_TAG}", "-f app/Dockerfile .")
                 }
             }
         }
@@ -160,14 +160,10 @@ pipeline {
             }
             steps {
                 script {
-                    // Получаем имя пользователя и пароль из глобальных учетных данных Jenkins
-                    withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
-                        // Определяем команды Docker login и передаем учетные данные через stdin
-                        sh 'echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin'
-                        // Пушим образ с тегом ${IMAGE_TAG}
-                        image.push("${env.IMAGE_TAG}")
-                        // Пушим образ с тегом latest
-                        image.push("latest")
+                    docker.withRegistry('https://registry.hub.docker.com', 'docker-hub-credentials') {
+                        // Тегирование и загрузка образа
+                        docker.image("${IMAGE_NAME}:${IMAGE_TAG}").push()
+                        docker.image("${IMAGE_NAME}:${IMAGE_TAG}").push("${DOCKER_USERNAME}/${IMAGE_NAME}:latest")
                     }
                 }
             }
