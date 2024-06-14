@@ -103,7 +103,7 @@ pipeline {
             steps {
                 script {
                     // Building a Docker image from a Dockerfile in the "app" directory
-                    docker.build("${IMAGE_NAME}:${env.IMAGE_TAG}", "-f app/Dockerfile .")
+                    image = docker.build("${IMAGE_NAME}:${env.IMAGE_TAG}", "-f app/Dockerfile .")
                 }
             }
         }
