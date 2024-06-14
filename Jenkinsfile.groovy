@@ -160,15 +160,11 @@ pipeline {
             }
             steps {
                 script {
-                    // Получаем имя пользователя и пароль из глобальных учетных данных Jenkins
-                    withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
-                        // Определяем команды Docker login и передаем учетные данные через stdin
-                        sh "echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin"
-                        // Тегирование и загрузка образа
-                        sh "docker tag ${IMAGE_NAME}:${IMAGE_TAG} ${DOCKER_USERNAME}/${IMAGE_NAME}:${IMAGE_TAG}"
-                        sh "docker tag ${IMAGE_NAME}:${IMAGE_TAG} ${DOCKER_USERNAME}/${IMAGE_NAME}:latest"
-                        sh "docker push ${DOCKER_USERNAME}/${IMAGE_NAME}:${IMAGE_TAG}"
-                        sh "docker push ${DOCKER_USERNAME}/${IMAGE_NAME}:latest"
+                    docker.withRegistry('', 'docker-hub-credentials') {
+                        // Push with tag ${IMAGE_TAG}
+                        image.push("${env.IMAGE_TAG}")
+                        // Push image with tag latest
+                        image.push("latest")
                     }
                 }
             }
