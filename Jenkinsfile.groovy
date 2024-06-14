@@ -168,6 +168,7 @@ pipeline {
                         image.push("${env.IMAGE_TAG}")
                         // Пушим образ с тегом latest
                         image.push("latest")
+                    }
                 }
             }
         }
